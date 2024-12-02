@@ -6,14 +6,12 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:  # pragma: no cover
     from re import Pattern
-    from typing import Sequence, TypedDict
+    from typing import TypedDict
 
     class RegexReplaceDef(TypedDict):
         pattern: Pattern
         repl: str
 
-
-number_pattern = regexp(r"(\d+)")
 
 breaking_re = regexp(r"BREAKING[ -]CHANGE:\s?(.*)")
 
@@ -71,7 +69,3 @@ def parse_paragraphs(text: str) -> list[str]:
             ],
         )
     )
-
-
-def sort_numerically(iterable: Sequence[str] | set[str]) -> list[str]:
-    return sorted(iterable, key=lambda x: int((number_pattern.search(x) or [-1])[0]))
