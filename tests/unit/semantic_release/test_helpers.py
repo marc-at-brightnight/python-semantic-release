@@ -1,6 +1,8 @@
+from typing import Iterable
+
 import pytest
 
-from semantic_release.helpers import ParsedGitUrl, parse_git_url
+from semantic_release.helpers import ParsedGitUrl, parse_git_url, sort_numerically
 
 
 @pytest.mark.parametrize(
@@ -131,3 +133,62 @@ def test_parse_invalid_git_urls(url: str):
     """Test that an invalid git remote url throws a ValueError."""
     with pytest.raises(ValueError):
         parse_git_url(url)
+
+
+@pytest.mark.parametrize(
+    "unsorted_list, sorted_list, reverse",
+    [
+        (
+            # Only numbers (with mixed digits, ASC)
+            ["5", "3", "10"],
+            ["3", "5", "10"],
+            False,
+        ),
+        (
+            # Only numbers (with mixed digits, DESC)
+            ["5", "3", "10"],
+            ["10", "5", "3"],
+            True,
+        ),
+        (
+            # Only PR numbers
+            ["#5", "#3", "#10"],
+            ["#3", "#5", "#10"],
+            False,
+        ),
+        (
+            # Only PR numbers (DESC)
+            ["#5", "#3", "#10"],
+            ["#10", "#5", "#3"],
+            True,
+        ),
+        (
+            # Multiple prefixes (ASC)
+            ["#5", "PR#3", "PR#10", "#100"],
+            ["#5", "#100", "PR#3", "PR#10"],
+            False,
+        ),
+        (
+            # Multiple prefixes (DESC)
+            ["#5", "PR#3", "PR#10", "#100"],
+            ["#100", "#5", "PR#10", "PR#3"],
+            True,
+        ),
+        (
+            # No numbers mixed with mulitple prefixes (ASC)
+            ["abc", "#100", "#1000", "PR#45"],
+            ["#100", "#1000", "PR#45", "abc"],
+            False,
+        ),
+        (
+            # No numbers mixed with mulitple prefixes (DESC)
+            ["abc", "#100", "#1000", "PR#45"],
+            ["#1000", "#100", "PR#45", "abc"],
+            True,
+        ),
+    ],
+)
+def test_sort_numerically(
+    unsorted_list: Iterable[str], sorted_list: Iterable[str], reverse: bool
+):
+    assert sorted_list == sort_numerically(unsorted_list, reverse)
